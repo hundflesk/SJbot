@@ -1,0 +1,8 @@
+c:\users\elias persson\source\repos\SJbot\SJbot\bin\Debug\netcoreapp2.0\SJbot.deps.json
+c:\users\elias persson\source\repos\SJbot\SJbot\bin\Debug\netcoreapp2.0\SJbot.runtimeconfig.json
+c:\users\elias persson\source\repos\SJbot\SJbot\bin\Debug\netcoreapp2.0\SJbot.runtimeconfig.dev.json
+c:\users\elias persson\source\repos\SJbot\SJbot\bin\Debug\netcoreapp2.0\SJbot.dll
+c:\users\elias persson\source\repos\SJbot\SJbot\obj\Debug\netcoreapp2.0\SJbot.csprojResolveAssemblyReference.cache
+c:\users\elias persson\source\repos\SJbot\SJbot\obj\Debug\netcoreapp2.0\SJbot.csproj.CoreCompileInputs.cache
+c:\users\elias persson\source\repos\SJbot\SJbot\obj\Debug\netcoreapp2.0\SJbot.AssemblyInfoInputs.cache
+c:\users\elias persson\source\repos\SJbot\SJbot\obj\Debug\netcoreapp2.0\SJbot.AssemblyInfo.cs
