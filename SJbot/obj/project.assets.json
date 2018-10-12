@@ -18,6 +18,18 @@
           "lib/netstandard2.0/DSharpPlus.dll": {}
         }
       },
+      "DSharpPlus.CommandsNext/3.2.3": {
+        "type": "package",
+        "dependencies": {
+          "DSharpPlus": "3.2.3"
+        },
+        "compile": {
+          "lib/netstandard2.0/DSharpPlus.CommandsNext.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/DSharpPlus.CommandsNext.dll": {}
+        }
+      },
       "Microsoft.CSharp/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -1670,6 +1682,27 @@
         "lib/netstandard1.3/DSharpPlus.xml",
         "lib/netstandard2.0/DSharpPlus.dll",
         "lib/netstandard2.0/DSharpPlus.xml"
+      ]
+    },
+    "DSharpPlus.CommandsNext/3.2.3": {
+      "sha512": "58KaSGeefzOl/Bzthmo2yGMr1gy5bvBi2cIVFxWkn+K0LNCOVJ3zN13/uC/daQGOD2phLIRHMkjrW+OO8FJY/w==",
+      "type": "package",
+      "path": "dsharpplus.commandsnext/3.2.3",
+      "files": [
+        "dsharpplus.commandsnext.3.2.3.nupkg.sha512",
+        "dsharpplus.commandsnext.nuspec",
+        "lib/net45/DSharpPlus.CommandsNext.dll",
+        "lib/net45/DSharpPlus.CommandsNext.xml",
+        "lib/net46/DSharpPlus.CommandsNext.dll",
+        "lib/net46/DSharpPlus.CommandsNext.xml",
+        "lib/net47/DSharpPlus.CommandsNext.dll",
+        "lib/net47/DSharpPlus.CommandsNext.xml",
+        "lib/netstandard1.1/DSharpPlus.CommandsNext.dll",
+        "lib/netstandard1.1/DSharpPlus.CommandsNext.xml",
+        "lib/netstandard1.3/DSharpPlus.CommandsNext.dll",
+        "lib/netstandard1.3/DSharpPlus.CommandsNext.xml",
+        "lib/netstandard2.0/DSharpPlus.CommandsNext.dll",
+        "lib/netstandard2.0/DSharpPlus.CommandsNext.xml"
       ]
     },
     "Microsoft.CSharp/4.3.0": {
@@ -5721,6 +5754,7 @@
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.0": [
       "DSharpPlus >= 3.2.3",
+      "DSharpPlus.CommandsNext >= 3.2.3",
       "Microsoft.NETCore.App >= 2.0.0"
     ]
   },
@@ -5730,15 +5764,12 @@
   },
   "project": {
     "version": "1.0.0",
-    "restoreSettings": {
-      "hideWarningsAndErrors": true
-    },
     "restore": {
-      "projectUniqueName": "c:\\users\\elias persson\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
+      "projectUniqueName": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
       "projectName": "SJbot",
-      "projectPath": "c:\\users\\elias persson\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
+      "projectPath": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
       "packagesPath": "C:\\Users\\Elias Persson\\.nuget\\packages\\",
-      "outputPath": "c:\\users\\elias persson\\source\\repos\\SJbot\\SJbot\\obj\\",
+      "outputPath": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -5768,14 +5799,18 @@
     "frameworks": {
       "netcoreapp2.0": {
         "dependencies": {
-          "Microsoft.NETCore.App": {
-            "target": "Package",
-            "version": "2.0.0",
-            "autoReferenced": true
-          },
           "DSharpPlus": {
             "target": "Package",
-            "version": "3.2.3"
+            "version": "[3.2.3, )"
+          },
+          "DSharpPlus.CommandsNext": {
+            "target": "Package",
+            "version": "[3.2.3, )"
+          },
+          "Microsoft.NETCore.App": {
+            "target": "Package",
+            "version": "[2.0.0, )",
+            "autoReferenced": true
           }
         },
         "imports": [
