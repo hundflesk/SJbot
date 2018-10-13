@@ -24,7 +24,10 @@
           "System.Runtime.InteropServices.RuntimeInformation": "4.3.0"
         },
         "runtime": {
-          "lib/netstandard2.0/DSharpPlus.dll": {}
+          "lib/netstandard2.0/DSharpPlus.dll": {
+            "assemblyVersion": "3.2.3.0",
+            "fileVersion": "3.2.3.0"
+          }
         }
       },
       "DSharpPlus.CommandsNext/3.2.3": {
@@ -32,7 +35,10 @@
           "DSharpPlus": "3.2.3"
         },
         "runtime": {
-          "lib/netstandard2.0/DSharpPlus.CommandsNext.dll": {}
+          "lib/netstandard2.0/DSharpPlus.CommandsNext.dll": {
+            "assemblyVersion": "3.2.3.0",
+            "fileVersion": "3.2.3.0"
+          }
         }
       },
       "Microsoft.CSharp/4.3.0": {
@@ -71,7 +77,10 @@
           "System.Xml.XmlDocument": "4.3.0"
         },
         "runtime": {
-          "lib/netstandard1.3/Newtonsoft.Json.dll": {}
+          "lib/netstandard1.3/Newtonsoft.Json.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.3.21018"
+          }
         }
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.2": {

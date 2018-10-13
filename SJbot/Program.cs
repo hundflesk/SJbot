@@ -8,13 +8,13 @@ using DSharpPlus.CommandsNext.Attributes;
 
 namespace SJbot
 {
-    internal class Tåg
+    internal class SJTrain
     {
         public int num;
         public int track;
         public TimeSpan departure;
 
-        public Tåg(int num, int track, TimeSpan departure)
+        public SJTrain(int num, int track, TimeSpan departure)
         {
             this.num = num;
             this.track = track;
@@ -27,44 +27,48 @@ namespace SJbot
         public static bool notifications = true; //notiser är aktiverade by default
 
         [Command("notis")]
-        public async Task Notifications(CommandContext ctx, string setting)
+        [Description("Deactivates or activates notifications. Notifications are activated by default")]
+        public async Task Notifications(CommandContext ctx, string arg)
         {
             string msg = null;
 
-            var setting0 = new string[] { "off", "deactivated"};
+            string state = "state";
+            var setting0 = new string[] { "off", "deactivated" };
             var setting1 = new string[] { "on", "activated" };
-            string setting2 = "state";
 
             string note = "Setting has not been changed";
 
-            if (setting == setting0[0] && notifications == true)
+            if (arg == state)
+            {
+                if (notifications == false)
+                    msg = $"Notifications are currently {setting0[1]}.";
+
+                else if (notifications == true)
+                    msg = $"Notifications are currently {setting1[1]}.";
+            }
+
+            else if (arg == setting0[0] && notifications == true)
             {
                 notifications = false;
                 msg = $"Notifications have been {setting0[1]}.";
             }
-            else if (setting == setting1[0] && notifications == false)
+            else if (arg == setting1[0] && notifications == false)
             {
                 notifications = true;
                 msg = $"Notifications have been {setting1[1]}.";
             }
 
-            else if (setting == setting0[0] && notifications == false)
+            else if (arg == setting0[0] && notifications == false)
                 msg = $"Notifications are already {setting0[1]}. {note}.";
 
-            else if (setting == setting1[0] && notifications == true)
+            else if (arg == setting1[0] && notifications == true)
                 msg = $"Notifications are already {setting1[1]}. {note}.";
 
-            else if (setting == setting2)
-            {
-                if (notifications == false)
-                    msg = $"Notifications are currently {setting0[1]}.";
-                else if (notifications == true)
-                    msg = $"Notifications are currently {setting1[1]}.";
-            }
             await ctx.RespondAsync(msg);
         }
 
         [Command("tåg")]
+        [Description("Tells which trains will run the coming hour. Note: Will not work on weekends.")]
         public async Task Train(CommandContext ctx)
         {
             string msg = null;
@@ -103,7 +107,7 @@ namespace SJbot
         private static DiscordClient discord;
         private static CommandsNextModule commands;
 
-        public static List<Tåg> trainList;
+        public static List<SJTrain> trainList;
 
         private static void Main(string[] args)
         {
@@ -111,9 +115,9 @@ namespace SJbot
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        private static List<Tåg> AddTrains()
+        private static List<SJTrain> AddTrains()
         {
-            var trains = new List<Tåg>(); //lista med alla tåg som avgår på en dag
+            var trains = new List<SJTrain>(); //lista med alla tåg som avgår på en dag
 
             var timeForFirstTrain = new TimeSpan(9, 14, 0); //första tåget går 09:14
             var timeForLastTrain = new TimeSpan(19, 14, 0); //sista tåget går 19:14
@@ -132,7 +136,7 @@ namespace SJbot
 
             for (var time = timeForFirstTrain; time <= timeForLastTrain; time = time.Add(timeToAdd))
             {
-                trains.Add(new Tåg(trainsInfo[index].Key, trainsInfo[index].Value, time));
+                trains.Add(new SJTrain(trainsInfo[index].Key, trainsInfo[index].Value, time));
 
                 //de första 5 tågen går varje timme, därför läggs ytterligare 30 min till
                 //från och med det 6:e tåget går resten av tågen var 30:e minut istället
