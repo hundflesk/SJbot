@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 
@@ -24,13 +26,61 @@ namespace SJbot
 
     internal class SJCommands
     {
-        public static bool notifications = true; //notiser är aktiverade by default
+        public static bool notifications = true; //notifikationer är aktiverade by default
 
-        [Command("notis")]
-        [Description("Deactivates or activates notifications. Notifications are activated by default")]
-        public async Task Notifications(CommandContext ctx, string arg)
+        [Command("hour")]
+        [Description("Tells which trains will run the coming hour. Note: Will not work on weekends.")]
+        public async Task ComingHour(CommandContext ctx)
         {
             string msg = null;
+
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = "Trains The Coming Hour",
+                Color = DiscordColor.SpringGreen,
+            };
+
+            var currentDay = DateTime.Now;
+            if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday)
+                msg = $"The trains will not run on weekends.";
+            else
+            {
+                var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, 0);
+                var timeInterval = currentTime.Add(new TimeSpan(1, 0, 0));
+
+                msg = $"In this coming hour will the following run:\n\n";
+                int trainQuantity = 0;
+
+                //kolla vilka tåg som går mellan 'currentTime' och 'timeInterval' (60 min)
+                foreach (var train in Program.TrainList)
+                {
+                    if (train.departure > currentTime && train.departure < timeInterval)
+                    {
+                        msg += $" Train {train.num} at {train.departure} from track {train.track}.\n";
+                        trainQuantity++;
+                    }
+                }
+                if (trainQuantity == 0)
+                    msg = $"There is no trains which runs this coming hour.";
+                else if (trainQuantity == 1)
+                    msg += " It seems like it is only hourtrains which runs right now.";
+            }
+            embed.Description = msg;
+            await ctx.RespondAsync(null, false, embed);
+        }
+
+
+        [Command("notif")]
+        [Description("Deactivates or activates notifications. Notifications are activated by default.")]
+        public async Task Notifications(CommandContext ctx, string argument)
+        {
+            string msg = null;
+
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = "Notifications",
+                Color = DiscordColor.SpringGreen,
+            };
 
             string state = "state";
             var setting0 = new string[] { "off", "deactivated" };
@@ -38,7 +88,7 @@ namespace SJbot
 
             string note = "Setting has not been changed";
 
-            if (arg == state)
+            if (argument == state) //ifall användaren vill kolla den nuvarande inställningen
             {
                 if (notifications == false)
                     msg = $"Notifications are currently {setting0[1]}.";
@@ -47,71 +97,61 @@ namespace SJbot
                     msg = $"Notifications are currently {setting1[1]}.";
             }
 
-            else if (arg == setting0[0] && notifications == true)
-            {
+            else if (argument == setting0[0] && notifications == true)
+            { //ifall användaren vill stänga av notifikationer
                 notifications = false;
                 msg = $"Notifications have been {setting0[1]}.";
             }
-            else if (arg == setting1[0] && notifications == false)
-            {
+            else if (argument == setting1[0] && notifications == false)
+            { //ifall användaren vill sätta på notifikationer
                 notifications = true;
                 msg = $"Notifications have been {setting1[1]}.";
             }
 
-            else if (arg == setting0[0] && notifications == false)
+            //ifall när användaren försöker stänga av notifikationer men de är redan på
+            else if (argument == setting0[0] && notifications == false)
                 msg = $"Notifications are already {setting0[1]}. {note}.";
 
-            else if (arg == setting1[0] && notifications == true)
+            //ifall när användaren försöker sätta på notifikationer men de är redan av
+            else if (argument == setting1[0] && notifications == true)
                 msg = $"Notifications are already {setting1[1]}. {note}.";
 
-            await ctx.RespondAsync(msg);
+            embed.Description = msg;
+            await ctx.RespondAsync(null, false, embed);
         }
 
-        [Command("tåg")]
-        [Description("Tells which trains will run the coming hour. Note: Will not work on weekends.")]
-        public async Task Train(CommandContext ctx)
+        [Command("trains")]
+        [Description("Prints the list of all the trains.")]
+        public async Task TrainList(CommandContext ctx)
         {
             string msg = null;
 
-            var currentDay = DateTime.Now;
-            if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday)
-                msg = $"{ctx.User.Mention}, the trains will not run on weekends.";
-            else
+            var embed = new DiscordEmbedBuilder
             {
-                var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, currentDay.Second);
-                var timeInterval = currentTime.Add(new TimeSpan(1, 0, 0));
+                Title = "Train List:",
+                Color = DiscordColor.SpringGreen,
+            };
 
-                msg = $"{ctx.User.Mention}, in this coming hour will the following run:";
-                int trainQuantity = 0;
-
-                //kolla vilka tåg som går mellan 'currentTime' och 'timeInterval' (60 min)
-                foreach (var train in Program.trainList)
-                {
-                    if (train.departure > currentTime && train.departure < timeInterval)
-                    {
-                        msg += $" Train {train.num} at {train.departure} from track {train.track}.";
-                        trainQuantity++;
-                    }
-                }
-                if (trainQuantity == 0)
-                    msg = $"{ctx.User.Mention}, there is no trains which runs this coming hour.";
-                else if (trainQuantity == 1)
-                    msg += " It seems like it is only hourtrains which runs right now.";
+            foreach (var train in Program.TrainList)
+            {
+                msg += $"\nTrain: {train.num} - Track: {train.track} - Time: {train.departure}\n";
             }
-            await ctx.RespondAsync(msg);
+
+            embed.Description = msg;
+            await ctx.RespondAsync(null, false, embed);
         }
     }
 
     internal class Program
     {
-        private static DiscordClient discord;
-        private static CommandsNextModule commands;
+        private static DiscordClient Discord { get; set; }
+        private static CommandsNextModule Commands { get; set; }
 
-        public static List<SJTrain> trainList;
+        public static List<SJTrain> TrainList { get; private set; }
 
         private static void Main(string[] args)
         {
-            trainList = AddTrains();
+            TrainList = AddTrains();
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
@@ -162,21 +202,75 @@ namespace SJbot
 
         private static async Task MainAsync(string[] args)
         {
-            discord = new DiscordClient(new DiscordConfiguration
+            Discord = new DiscordClient(new DiscordConfiguration
             {
                 Token = "NDkxOTMwOTE4NTAwNDMzOTMw.DoPDsA.-iBZ_CUDa6_O6CiCjPVrIIH0H6k",
                 TokenType = TokenType.Bot,
             });
 
-            commands = discord.UseCommandsNext(new CommandsNextConfiguration
+            Commands = Discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefix = "?"
             });
 
-            commands.RegisterCommands<SJCommands>();
+            Commands.RegisterCommands<SJCommands>();
 
-            await discord.ConnectAsync();
-            await Task.Delay(-1);
+            await Discord.ConnectAsync();
+            await Task.Run(NotificateAsync);
+        }
+
+        private static async Task NotificateAsync()
+        {
+            var channelSJ = Discord.GetChannelAsync(489823743346999331).Result;
+            var userMe = Discord.GetUserAsync(276068458242768907).Result;
+
+            var startActiveTime = new TimeSpan(8, 44, 0).TotalMinutes;
+            var endActiveTime = TrainList[TrainList.Count - 1].departure.TotalMinutes;
+
+            string msg = $"{userMe.Mention}, ett tåg går om 20 min. För att hinna med tåget bör du lämna skolan nu.";
+
+            //var testTrain = new TimeSpan(23, 20, 0).TotalMinutes;
+
+            while (true)
+            {
+                var currentDay = DateTime.Now;
+
+                if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    //ändra bot status till röd
+
+                }
+                else
+                {
+                    var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, 0).TotalMinutes;
+
+                    if (currentTime < startActiveTime || currentTime > endActiveTime)
+                    {
+                        //ändra bot status till gul
+
+                    }
+                    else
+                    {
+                        //ändra bot status till grön
+
+
+                        if (SJCommands.notifications == true)
+                        {
+                            foreach (var train in TrainList)
+                            {
+                                var t = new TimeSpan(train.departure.Hours, train.departure.Minutes, 0).TotalMinutes;
+
+                                if (currentTime == t - 20)
+                                {
+                                    await Discord.SendMessageAsync(channelSJ, msg);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                Thread.Sleep(60000);
+            }
         }
     }
 }
