@@ -48,6 +48,9 @@ namespace SJbot
                 var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, 0);
                 var timeInterval = currentTime.Add(new TimeSpan(1, 0, 0));
 
+                //används för att kolla tågen den kommande timmen är dem sista
+                var scndLastTrain = Program.TrainList[Program.TrainList.Count - 2].departure.TotalMinutes;
+
                 msg = $"In this coming hour will the following run:\n\n";
                 int trainQuantity = 0;
 
@@ -62,8 +65,11 @@ namespace SJbot
                 }
                 if (trainQuantity == 0)
                     msg = $"There is no trains which runs this coming hour.";
-                else if (trainQuantity == 1)
-                    msg += " It seems like it is only hourtrains which runs right now.";
+
+                //här används variabeln för att kolla ifall det är timtåg som går den kommande timmen
+                //botten ska inte säga att det är timtåg som går om det bara är det sista tåget som skrivs
+                else if (trainQuantity == 1 && currentTime.TotalMinutes > scndLastTrain)
+                    msg += "\nIt seems like it is only hourtrains which runs right now.";
             }
             embed.Description = msg;
             await ctx.RespondAsync(null, false, embed);
@@ -238,7 +244,7 @@ namespace SJbot
                 if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday)
                 {
                     //ändra bot status till röd
-
+                    
                 }
                 else
                 {

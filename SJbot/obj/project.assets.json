@@ -5759,30 +5759,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\elias\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackagesFallback\\": {},
+    "C:\\Users\\Elias Persson\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
-    "restoreSettings": {
-      "hideWarningsAndErrors": true
-    },
     "restore": {
-      "projectUniqueName": "C:\\Users\\elias\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
+      "projectUniqueName": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
       "projectName": "SJbot",
-      "projectPath": "C:\\Users\\elias\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
-      "packagesPath": "C:\\Users\\elias\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\elias\\source\\repos\\SJbot\\SJbot\\obj\\",
+      "projectPath": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
+      "packagesPath": "C:\\Users\\Elias Persson\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackagesFallback\\",
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\elias\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.Fallback.config"
+        "C:\\Users\\Elias Persson\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp2.0"
