@@ -36,11 +36,12 @@ namespace SJbot
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = "Trains The Coming Hour",
+                Title = "Trains the coming hour:",
                 Color = DiscordColor.SpringGreen,
             };
 
             var currentDay = DateTime.Now;
+
             if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday)
                 msg = $"The trains will not run on weekends.";
             else
@@ -48,7 +49,7 @@ namespace SJbot
                 var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, 0);
                 var timeInterval = currentTime.Add(new TimeSpan(1, 0, 0));
 
-                //används för att kolla tågen den kommande timmen är dem sista
+                //används för att kolla om tågen den kommande timmen är dem sista
                 var scndLastTrain = Program.TrainList[Program.TrainList.Count - 2].departure.TotalMinutes;
 
                 msg = $"In this coming hour will the following run:\n\n";
@@ -67,7 +68,7 @@ namespace SJbot
                     msg = $"There is no trains which runs this coming hour.";
 
                 //här används variabeln för att kolla ifall det är timtåg som går den kommande timmen
-                //botten ska inte säga att det är timtåg som går om det bara är det sista tåget som skrivs
+                //botten ska inte säga att det är timtåg som går om det bara är det sista tåget som går
                 else if (trainQuantity == 1 && currentTime.TotalMinutes > scndLastTrain)
                     msg += "\nIt seems like it is only hourtrains which runs right now.";
             }
@@ -84,7 +85,7 @@ namespace SJbot
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = "Notifications",
+                Title = "Notifications:",
                 Color = DiscordColor.SpringGreen,
             };
 
@@ -127,14 +128,14 @@ namespace SJbot
         }
 
         [Command("trains")]
-        [Description("Prints the list of all the trains.")]
+        [Description("Prints a detailed list of all the trains which runs this day.")]
         public async Task TrainList(CommandContext ctx)
         {
             string msg = null;
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = "Train List:",
+                Title = "List of all the trains which runs today:",
                 Color = DiscordColor.SpringGreen,
             };
 
@@ -230,12 +231,7 @@ namespace SJbot
             var channelSJ = Discord.GetChannelAsync(489823743346999331).Result;
             var userMe = Discord.GetUserAsync(276068458242768907).Result;
 
-            var startActiveTime = new TimeSpan(8, 44, 0).TotalMinutes;
-            var endActiveTime = TrainList[TrainList.Count - 1].departure.TotalMinutes;
-
             string msg = $"{userMe.Mention}, ett tåg går om 20 min. För att hinna med tåget bör du lämna skolan nu.";
-
-            //var testTrain = new TimeSpan(23, 20, 0).TotalMinutes;
 
             while (true)
             {
@@ -243,36 +239,36 @@ namespace SJbot
 
                 if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday)
                 {
-                    //ändra bot status till röd
-                    
+                    if (userMe.Presence.Status != UserStatus.DoNotDisturb)
+                    {
+                        //ändra bot status till röd
+                    }
                 }
                 else
                 {
-                    var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, 0).TotalMinutes;
-
-                    if (currentTime < startActiveTime || currentTime > endActiveTime)
+                    if (SJCommands.notifications == true)
                     {
-                        //ändra bot status till gul
+                        if (userMe.Presence.Status != UserStatus.Online)
+                        {
+                            //ändra bot status till grön
+                        }
 
+                        var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, 0).TotalMinutes;
+
+                        foreach (var train in TrainList)
+                        {
+                            var t = new TimeSpan(train.departure.Hours, train.departure.Minutes, 0).TotalMinutes;
+
+                            if (currentTime == t - 20)
+                            {
+                                await Discord.SendMessageAsync(channelSJ, msg);
+                                break;
+                            }
+                        }
                     }
                     else
                     {
-                        //ändra bot status till grön
-
-
-                        if (SJCommands.notifications == true)
-                        {
-                            foreach (var train in TrainList)
-                            {
-                                var t = new TimeSpan(train.departure.Hours, train.departure.Minutes, 0).TotalMinutes;
-
-                                if (currentTime == t - 20)
-                                {
-                                    await Discord.SendMessageAsync(channelSJ, msg);
-                                    break;
-                                }
-                            }
-                        }
+                        //ändra bot status till gul
                     }
                 }
                 Thread.Sleep(60000);
