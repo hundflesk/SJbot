@@ -9,16 +9,15 @@
 
         public RestClient()
         {
-            Url = null;
+            Url = "http://api.tagtider.net/v1/stations/243/transfers/departures.json";
             HttpMethod = HttpVerb.GET;
+            UserName = "tagtider";
+            UserPassword = "codemocracy";
         }
     }
 
     public enum HttpVerb
     {
-        GET,
-        POST,
-        PUT,
-        DELETE
+        GET
     }
 }

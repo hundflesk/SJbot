@@ -119,14 +119,14 @@ namespace SJbot
         }
 
         [Command("trains")]
-        [Description("Prints a detailed list of all the trains which runs this day.")]
+        [Description("Prints a detailed list of the ten following trains.")]
         public async Task TrainList(CommandContext ctx)
         {
             string msg = null;
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = "List of all the trains which runs today:",
+                Title = "List of the ten trains which:",
                 Color = DiscordColor.SpringGreen,
             };
 

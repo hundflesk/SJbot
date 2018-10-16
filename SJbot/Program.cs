@@ -18,8 +18,10 @@ namespace SJbot
         private static CommandsNextModule Commands { get; set; }
 
         public static DiscordUser Bot { get; private set; }
+        public static DiscordUser Me { get; private set; }
+        public static DiscordChannel ChannelSJ { get; private set; }
 
-        public static List<SJTrain> TrainList { get; private set; }
+        public static List<SJTrain> TrainList { get; set; }
         private static List<KeyValuePair<DayOfWeek, TimeSpan>> SchoolDays { get; set; }
 
         private static List<KeyValuePair<DayOfWeek, TimeSpan>> AddSchoolDays()
@@ -56,26 +58,24 @@ namespace SJbot
             });
 
             Commands.RegisterCommands<SJCommands>();
+
             Bot = Discord.GetUserAsync(491930918500433930).Result;
+            ChannelSJ = Discord.GetChannelAsync(489823743346999331).Result;
+            Me = Discord.GetUserAsync(276068458242768907).Result;
 
             await Discord.ConnectAsync();
 
-            Thread x = new Thread(UpdateTrainList);
-            //x.Start();
+            Thread x = new Thread(CallAPI);
+            x.Start();
             Thread y = new Thread(NotificateAsync);
             y.Start();
 
             await Task.Delay(-1);
         }
 
-        private static void UpdateTrainList()
+        private static void CallAPI()
         {
-            RestClient client = new RestClient()
-            {
-                Url = "http://api.tagtider.net/v1/stations/243/transfers/departures.json",
-                UserName = "tagtider",
-                UserPassword = "codemocracy"
-            };
+            RestClient client = new RestClient();
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(client.Url);
             request.Method = client.HttpMethod.ToString();
@@ -85,10 +85,6 @@ namespace SJbot
 
             while (true)
             {
-                var tempTrainsList = new List<SJTrain>();
-
-                string rawData;
-
                 var response = (HttpWebResponse)request.GetResponse();
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
@@ -99,14 +95,11 @@ namespace SJbot
                 if (stream != null)
                 {
                     var reader = new StreamReader(stream);
-                    rawData = reader.ReadToEnd();
+                    string rawData = reader.ReadToEnd();
 
-                    var data = JsonConvert.DeserializeObject<JsonSJTrainArray[]>(rawData);
-                    for (int i = 0; i < 10; i++)
-                    {
+                    var data = JsonConvert.DeserializeObject<Rootobject>(rawData);
 
-                    }
-                    TrainList = tempTrainsList;
+                    Trains.UpdateTrainList(data);
                 }
                 Thread.Sleep(60000);
             }
@@ -114,19 +107,13 @@ namespace SJbot
 
         private static async void NotificateAsync()
         {
-            var channelSJ = Discord.GetChannelAsync(489823743346999331).Result;
-            var userMe = Discord.GetUserAsync(276068458242768907).Result;
-
-            string msg = $"{userMe.Mention}, ett tåg går om 20 min. För att hinna med tåget bör du lämna skolan nu.";
-
-            //var testTrain = new TimeSpan(12, 23, 0).TotalMinutes;
-            //var testEndTime = new TimeSpan(0, 0, 0).TotalMinutes;
+            string msg = $"{Me.Mention}, ett tåg går om 20 min. För att hinna med tåget bör du lämna skolan nu.";
 
             while (true)
             {
                 var currentDay = DateTime.Now;
 
-                if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday || currentDay.DayOfWeek == DayOfWeek.Tuesday)
+                if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday)
                 {
                     if (Bot.Presence.Status != UserStatus.DoNotDisturb)
                     {
@@ -146,16 +133,16 @@ namespace SJbot
 
                         var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, 0).TotalMinutes;
 
-                        //foreach (var train in TrainList)
-                        //{
-                        //    var t = new TimeSpan(train.departure.Hours, train.departure.Minutes, 0).TotalMinutes;
+                        foreach (var train in TrainList)
+                        {
+                            var t = new TimeSpan(train.departure.Hours, train.departure.Minutes, 0).TotalMinutes;
 
-                        //    if (currentTime == t - 20) // && currentTime > testEndTime
-                        //    {
-                        //        await Discord.SendMessageAsync(channelSJ, msg);
-                        //        break;
-                        //    }
-                        //}
+                            if (currentTime == t - 20) // && currentTime > testEndTime
+                            {
+                                await Discord.SendMessageAsync(ChannelSJ, msg);
+                                break;
+                            }
+                        }
                     }
                     else
                     {
