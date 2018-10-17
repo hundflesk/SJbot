@@ -60,55 +60,123 @@ namespace SJbot
             Commands.RegisterCommands<SJCommands>();
 
             Bot = Discord.GetUserAsync(491930918500433930).Result;
-            ChannelSJ = Discord.GetChannelAsync(489823743346999331).Result;
+            ChannelSJ = Discord.GetChannelAsync(502175502983757836).Result;
             Me = Discord.GetUserAsync(276068458242768907).Result;
 
             await Discord.ConnectAsync();
 
             Thread x = new Thread(CallAPI);
             x.Start();
-            Thread y = new Thread(NotificateAsync);
-            y.Start();
 
             await Task.Delay(-1);
         }
 
-        private static void CallAPI()
+        private static async void CallAPI()
         {
             RestClient client = new RestClient();
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(client.Url);
-            request.Method = client.HttpMethod.ToString();
-
             NetworkCredential credential = new NetworkCredential(client.UserName, client.UserPassword);
-            request.Credentials = credential;
 
+            bool cheapWay = false;
+            var canceledTrainsToday = new List<CanceledTrain>();
             while (true)
             {
-                var response = (HttpWebResponse)request.GetResponse();
-                if (response.StatusCode != HttpStatusCode.OK)
+                while (true)
                 {
-                    throw new Exception("error: " + response.StatusCode.ToString());
+                    WebRequest request = WebRequest.Create(client.Url);
+                    request.Method = client.HttpMethod.ToString();
+                    request.Credentials = credential;
+
+                    WebResponse response = await request.GetResponseAsync();
+
+                    var stream = response.GetResponseStream();
+                    if (stream != null)
+                    {
+                        var reader = new StreamReader(stream); //@"C:\PRR2_filhantering\sj\test.json"
+                        string rawData = await reader.ReadToEndAsync();
+                        var data = JsonConvert.DeserializeObject<Rootobject>(rawData);
+
+                        var tempTrainsList = new List<SJTrain>();
+
+                        foreach (var t in data.station.transfers.transfer)
+                        {
+                            DateTime currentDay = DateTime.Now;
+                            if (canceledTrainsToday.Count != 0 && currentDay.DayOfWeek != canceledTrainsToday[canceledTrainsToday.Count - 1].day)
+                            {
+                                canceledTrainsToday = new List<CanceledTrain>(); //gör en ny lista med tåg som är inställda
+                                //görs när det blir en ny dag
+                            }
+                            string[] dayAndTime = t.departure.Split();
+                            DateTime trainDay = DateTime.Parse(dayAndTime[0]);
+
+                            //vill inte att listan ska innehålla tåg som går nästa dag
+                            if (currentDay.DayOfWeek != trainDay.DayOfWeek)
+                                break;
+
+                            //alla tågen jag tar går åker till/förbi Västerås
+                            if (t.destination.Contains("Västerås") && t.destination.Contains(","))
+                            {
+                                string type = t.type; //SJ regional hela tiden, men ändå, använder typen
+                                int num = Convert.ToInt32(t.train); //tågnummer
+
+                                string[] timeArr = dayAndTime[1].Split(":");
+                                TimeSpan time = new TimeSpan(Convert.ToInt32(timeArr[0]), Convert.ToInt32(timeArr[1]), Convert.ToInt32(timeArr[2]));
+
+                                if (t.track == "X" || t.track == "x")
+                                {
+                                    bool exists = false;
+                                    foreach (var canceled in canceledTrainsToday)
+                                    {
+                                        if (time == canceled.time)
+                                            exists = true;
+                                    }
+                                    if (exists == false)
+                                    {
+                                        string msg = $"{Me.Mention}, {t.type}: {t.train} with departure time {t.departure} has been canceled.";
+                                        msg += $"\nReason: {t.comment} --> Check the new list with command: '?trains'.";
+                                        await Discord.SendMessageAsync(ChannelSJ, msg);
+
+                                        canceledTrainsToday.Add(new CanceledTrain(trainDay.DayOfWeek, time));
+                                    }
+                                }
+                                else
+                                {
+                                    string track = t.track; //spår, tror jag blir "X" om iställt
+                                    //Console.WriteLine(track);
+
+                                    if (t.newDeparture == null || t.comment == null)
+                                    {
+                                        tempTrainsList.Add(new SJTrain(type, num, track, time));
+                                    }
+                                    else
+                                    {
+                                        string[] nDayTime = t.newDeparture.Split();
+                                        string[] nTimeArr = nDayTime[1].Split(":");
+                                        TimeSpan nTime = new TimeSpan(Convert.ToInt32(nTimeArr[0]), Convert.ToInt32(nTimeArr[1]), Convert.ToInt32(nTimeArr[2]));
+
+                                        string c = t.comment;
+
+                                        tempTrainsList.Add(new SJTrain(type, num, track, time, nTime, c));
+                                    }
+                                }
+                            }
+                        }
+                        TrainList = tempTrainsList;
+
+                        if (cheapWay == false)
+                        {
+                            Thread y = new Thread(NotificateAsync);
+                            y.Start();
+                            cheapWay = true;
+                        }
+                    }
+                    Thread.Sleep(10000);
                 }
-
-                var stream = response.GetResponseStream();
-                if (stream != null)
-                {
-                    var reader = new StreamReader(stream);
-                    string rawData = reader.ReadToEnd();
-
-                    var data = JsonConvert.DeserializeObject<Rootobject>(rawData);
-
-                    Trains.UpdateTrainList(data);
-                }
-                Thread.Sleep(60000);
             }
         }
 
         private static async void NotificateAsync()
         {
-            string msg = $"{Me.Mention}, ett tåg går om 20 min. För att hinna med tåget bör du lämna skolan nu.";
-
+            bool firstTime = true;
             while (true)
             {
                 var currentDay = DateTime.Now;
@@ -125,7 +193,7 @@ namespace SJbot
                 {
                     if (SJCommands.notifications == true)
                     {
-                        if (Bot.Presence.Status == UserStatus.DoNotDisturb)
+                        if (Bot.Presence.Status != UserStatus.Online)
                         {
                             //ändra bot status till grön
                             await Discord.UpdateStatusAsync(null, UserStatus.Online);
@@ -136,9 +204,21 @@ namespace SJbot
                         foreach (var train in TrainList)
                         {
                             var t = new TimeSpan(train.departure.Hours, train.departure.Minutes, 0).TotalMinutes;
+                            TimeSpan endTime;
 
-                            if (currentTime == t - 20) // && currentTime > testEndTime
+                            foreach (var schoolDay in SchoolDays)
                             {
+                                if (currentDay.DayOfWeek == schoolDay.Key)
+                                {
+                                    endTime = schoolDay.Value;
+                                    break;
+                                }
+                            }
+                            if (currentTime == t - 20 && currentTime > endTime.TotalMinutes)
+                            {
+                                string msg = $"{Me.Mention}, {train.type}: {train.num} departures from track: {train.track} in 20 minutes.";
+                                msg += "\nYou should leave school now to get to the train in time.";
+
                                 await Discord.SendMessageAsync(ChannelSJ, msg);
                                 break;
                             }
@@ -146,14 +226,21 @@ namespace SJbot
                     }
                     else
                     {
-                        if (Bot.Presence.Status == UserStatus.DoNotDisturb)
+                        if (Bot.Presence.Status != UserStatus.Idle)
                         {
                             //ändra bot status till gul
                             await Discord.UpdateStatusAsync(null, UserStatus.Idle);
                         }
                     }
                 }
-                Thread.Sleep(60000);
+                if (firstTime == true)
+                {
+                    int ms = 60000 - currentDay.Second * 1000;
+                    Thread.Sleep(ms);
+                    firstTime = false;
+                }
+                else
+                    Thread.Sleep(60000);
             }
         }
     }
