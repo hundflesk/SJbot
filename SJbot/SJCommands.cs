@@ -71,14 +71,22 @@ namespace SJbot
                 Color = DiscordColor.SpringGreen,
             };
 
-            foreach (var train in Program.TrainList)
+            if (Program.TrainList.Count == 0)
             {
-                msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure}";
+                embed.Title = "No more trains will departure today.";
+                msg = "All the trains have departured for today. Check the list tommorow.";
+            }
+            else
+            {
+                foreach (var train in Program.TrainList)
+                {
+                    msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure}";
 
-                if (train.comment != null && train.newDeparture.TotalMinutes != 0)
-                    msg += $" --> New Time: {train.newDeparture} - Info: {train.comment}";
+                    if (train.comment != null && train.newDeparture.TotalMinutes != 0)
+                        msg += $" --> New Time: {train.newDeparture} - Info: {train.comment}";
 
-                msg += "\n";
+                    msg += "\n";
+                }
             }
 
             embed.Description = msg;

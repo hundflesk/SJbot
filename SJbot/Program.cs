@@ -217,7 +217,7 @@ namespace SJbot
                             }
                             if (currentTime == t - 20 && currentTime > endTime.TotalMinutes)
                             {
-                                string msg = $"{Me.Mention}, {train.type}: {train.num} departures from track: {train.track} in 20 minutes.";
+                                string msg = $"{Me.Mention}, {train.type}: {train.num} departures in 20 minutes from track {train.track}.";
                                 msg += "\nYou should leave school now to get to the train in time.";
 
                                 await Discord.SendMessageAsync(ChannelSJ, msg);
