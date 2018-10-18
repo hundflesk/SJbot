@@ -74,10 +74,10 @@ namespace SJbot
             foreach (var train in Program.TrainList)
             {
                 msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure}";
+
                 if (train.comment != null && train.newDeparture.TotalMinutes != 0)
-                {
-                    msg += $" -- New Time: {train.newDeparture} - Info: {train.comment}";
-                }
+                    msg += $" --> New Time: {train.newDeparture} - Info: {train.comment}";
+
                 msg += "\n";
             }
 

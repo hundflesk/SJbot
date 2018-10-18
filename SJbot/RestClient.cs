@@ -16,8 +16,5 @@
         }
     }
 
-    public enum HttpVerb
-    {
-        GET
-    }
+    public enum HttpVerb { GET }
 }

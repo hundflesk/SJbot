@@ -1,0 +1,11 @@
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\bin\Release\netcoreapp2.0\SJbot.deps.json
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\bin\Release\netcoreapp2.0\SJbot.runtimeconfig.json
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\bin\Release\netcoreapp2.0\SJbot.runtimeconfig.dev.json
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\bin\Release\netcoreapp2.0\SJbot.dll
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\bin\Release\netcoreapp2.0\SJbot.pdb
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\obj\Release\netcoreapp2.0\SJbot.csprojAssemblyReference.cache
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\obj\Release\netcoreapp2.0\SJbot.csproj.CoreCompileInputs.cache
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\obj\Release\netcoreapp2.0\SJbot.AssemblyInfoInputs.cache
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\obj\Release\netcoreapp2.0\SJbot.AssemblyInfo.cs
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\obj\Release\netcoreapp2.0\SJbot.dll
+C:\Users\Elias Persson\source\repos\SJbot\SJbot\obj\Release\netcoreapp2.0\SJbot.pdb

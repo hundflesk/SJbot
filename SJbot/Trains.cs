@@ -11,11 +11,6 @@ namespace SJbot
         public TimeSpan newDeparture;
         public string comment;
 
-        public SJTrain(TimeSpan d)
-        {
-            departure = d;
-        }
-
         public SJTrain(string type, int num, string track, TimeSpan d)
         {
             this.type = type;
@@ -53,7 +48,6 @@ namespace SJbot
 
     public class Station
     {
-        public string name { get; set; }
         public Transfers transfers { get; set; }
     }
 

@@ -74,9 +74,13 @@ namespace SJbot
         private static async void CallAPI()
         {
             RestClient client = new RestClient();
+
+            //inloggning för att komma åt json-filen på hemsidan
             NetworkCredential credential = new NetworkCredential(client.UserName, client.UserPassword);
 
-            bool cheapWay = false;
+            bool cheapWay = false; //denna legendariska metod används för att notificateasync inte
+            //ska köras innan listan har hämtats från API:n, ska threaden ska bara köras en gång
+
             var canceledTrainsToday = new List<CanceledTrain>();
             while (true)
             {
@@ -100,11 +104,11 @@ namespace SJbot
                         foreach (var t in data.station.transfers.transfer)
                         {
                             DateTime currentDay = DateTime.Now;
+
+                            //när det blir en ny dag ska listan med inställda tåg rensas
                             if (canceledTrainsToday.Count != 0 && currentDay.DayOfWeek != canceledTrainsToday[canceledTrainsToday.Count - 1].day)
-                            {
                                 canceledTrainsToday = new List<CanceledTrain>(); //gör en ny lista med tåg som är inställda
-                                //görs när det blir en ny dag
-                            }
+
                             string[] dayAndTime = t.departure.Split();
                             DateTime trainDay = DateTime.Parse(dayAndTime[0]);
 
@@ -113,10 +117,11 @@ namespace SJbot
                                 break;
 
                             //alla tågen jag tar går åker till/förbi Västerås
+                            //kollar också om 'destination' har fler än en, därför kollas kommatecknet
                             if (t.destination.Contains("Västerås") && t.destination.Contains(","))
                             {
                                 string type = t.type; //SJ regional hela tiden, men ändå, använder typen
-                                int num = Convert.ToInt32(t.train); //tågnummer
+                                int num = Convert.ToInt32(t.train); //tågnummer, ska alltid gå att konvertera
 
                                 string[] timeArr = dayAndTime[1].Split(":");
                                 TimeSpan time = new TimeSpan(Convert.ToInt32(timeArr[0]), Convert.ToInt32(timeArr[1]), Convert.ToInt32(timeArr[2]));
@@ -141,12 +146,10 @@ namespace SJbot
                                 else
                                 {
                                     string track = t.track; //spår, tror jag blir "X" om iställt
-                                    //Console.WriteLine(track);
 
                                     if (t.newDeparture == null || t.comment == null)
-                                    {
                                         tempTrainsList.Add(new SJTrain(type, num, track, time));
-                                    }
+
                                     else
                                     {
                                         string[] nDayTime = t.newDeparture.Split();
@@ -176,28 +179,26 @@ namespace SJbot
 
         private static async void NotificateAsync()
         {
-            bool firstTime = true;
+            bool firstTime = true; //används för att notifikationerna ska köras så fort det blir en ny minut
+            //annars om man startar programmet ex. 10 sekunder innan det blir en ny minut, kommer en notifikation
+            //skickas 50 sekunder efter i den minut då botten ska egentligen skicka så fort den minuten blev till
+            //enkelt sagt: botten ska skicka ett meddelande så fort det blir en ny minut
+
             while (true)
             {
                 var currentDay = DateTime.Now;
 
                 if (currentDay.DayOfWeek == DayOfWeek.Saturday || currentDay.DayOfWeek == DayOfWeek.Sunday)
                 {
-                    if (Bot.Presence.Status != UserStatus.DoNotDisturb)
-                    {
-                        //ändra bot status till röd
+                    if (Bot.Presence.Status != UserStatus.DoNotDisturb) //bot status => röd
                         await Discord.UpdateStatusAsync(null, UserStatus.DoNotDisturb);
-                    }
                 }
                 else
                 {
                     if (SJCommands.notifications == true)
                     {
-                        if (Bot.Presence.Status != UserStatus.Online)
-                        {
-                            //ändra bot status till grön
+                        if (Bot.Presence.Status != UserStatus.Online) //bot status => grön
                             await Discord.UpdateStatusAsync(null, UserStatus.Online);
-                        }
 
                         var currentTime = new TimeSpan(currentDay.Hour, currentDay.Minute, 0).TotalMinutes;
 
@@ -226,15 +227,12 @@ namespace SJbot
                     }
                     else
                     {
-                        if (Bot.Presence.Status != UserStatus.Idle)
-                        {
-                            //ändra bot status till gul
+                        if (Bot.Presence.Status != UserStatus.Idle) //bot status => gul
                             await Discord.UpdateStatusAsync(null, UserStatus.Idle);
-                        }
                     }
                 }
                 if (firstTime == true)
-                {
+                { //gör att botten väntar med att kolla koden tills den sekund det blir en ny minut
                     int ms = 60000 - currentDay.Second * 1000;
                     Thread.Sleep(ms);
                     firstTime = false;
