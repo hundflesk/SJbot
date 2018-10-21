@@ -29,7 +29,7 @@ namespace SJbot
             var days = new Dictionary<DayOfWeek, TimeSpan>
             {
                 {DayOfWeek.Monday, new TimeSpan(15, 50, 0) },
-                {DayOfWeek.Tuesday, new TimeSpan(15, 40, 0) },
+                {DayOfWeek.Tuesday, new TimeSpan(15, 45, 0) },
                 {DayOfWeek.Wednesday, new TimeSpan(15, 20, 0) },
                 {DayOfWeek.Thursday, new TimeSpan(12, 20, 0) },
                 {DayOfWeek.Friday, new TimeSpan(12, 20, 0) }
@@ -59,9 +59,9 @@ namespace SJbot
 
             Commands.RegisterCommands<SJCommands>();
 
+            Me = Discord.GetUserAsync(276068458242768907).Result;
             Bot = Discord.GetUserAsync(491930918500433930).Result;
             ChannelSJ = Discord.GetChannelAsync(502175502983757836).Result;
-            Me = Discord.GetUserAsync(276068458242768907).Result;
 
             await Discord.ConnectAsync();
 
@@ -177,7 +177,7 @@ namespace SJbot
             }
         }
 
-        private static async void NotificateAsync()
+        private static async void NotificateAsync() //gör ett kommando som säger till botten att jag har åkt hem!!
         {
             bool firstTime = true; //används för att notifikationerna ska köras så fort det blir en ny minut
             //annars om man startar programmet ex. 10 sekunder innan det blir en ny minut, kommer en notifikation
@@ -205,17 +205,19 @@ namespace SJbot
                         foreach (var train in TrainList)
                         {
                             var t = new TimeSpan(train.departure.Hours, train.departure.Minutes, 0).TotalMinutes;
-                            TimeSpan endTime;
+                            TimeSpan schoolEnd;
+                            TimeSpan lastNotiTime;
 
                             foreach (var schoolDay in SchoolDays)
                             {
                                 if (currentDay.DayOfWeek == schoolDay.Key)
                                 {
-                                    endTime = schoolDay.Value;
+                                    schoolEnd = schoolDay.Value;
+                                    lastNotiTime = schoolEnd.Add(new TimeSpan(2, 0, 0));
                                     break;
                                 }
                             }
-                            if (currentTime == t - 20 && currentTime > endTime.TotalMinutes)
+                            if (currentTime == t - 20 && currentTime > schoolEnd.TotalMinutes && currentTime < lastNotiTime.TotalMinutes)
                             {
                                 string msg = $"{Me.Mention}, {train.type}: {train.num} departures in 20 minutes from track {train.track}.";
                                 msg += "\nYou should leave school now to get to the train in time.";
@@ -231,6 +233,7 @@ namespace SJbot
                             await Discord.UpdateStatusAsync(null, UserStatus.Idle);
                     }
                 }
+
                 if (firstTime == true)
                 { //gör att botten väntar med att kolla koden tills den sekund det blir en ny minut
                     int ms = 60000 - currentDay.Second * 1000;

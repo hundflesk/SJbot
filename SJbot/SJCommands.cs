@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -7,8 +8,30 @@ namespace SJbot
 {
     public class SJCommands
     {
+        [RequireOwner]
+        [Command("done")]
+        [Description("Tells us you are on your way home from the train station.")]
+        public async Task Done(CommandContext ctx)
+        {
+            string msg = null;
+
+            DateTime date = DateTime.Now;
+
+            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                msg = "";
+            }
+            else
+            {
+                msg = "Acknowledged. You will no longer recieve notifications about departures for today.";
+            }
+
+            await ctx.RespondAsync(msg);
+        }
+
         public static bool notifications = true; //notifikationer är aktiverade by default
 
+        [RequireOwner]
         [Command("notif")]
         [Description("Enables or disables notifications. Leave argument blank to get current setting.")]
         public async Task Notifications(CommandContext ctx, [Description("on: enable | off: disable |")]string argument = "state")
@@ -67,23 +90,27 @@ namespace SJbot
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = "List of trains which will departure today:",
+                Title = "No list for today.",
                 Color = DiscordColor.SpringGreen,
             };
 
-            if (Program.TrainList.Count == 0)
-            {
-                embed.Title = "No more trains will departure today.";
-                msg = "All the trains have departured for today. Check the list tommorow.";
-            }
+            DateTime date = DateTime.Now;
+
+            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                msg = "The trains do not run on weekends.";
+
+            else if (Program.TrainList.Count == 0)
+                msg = "All the trains have departured for today.";
+
             else
             {
+                embed.Title = "List of trains which will departure today:";
                 foreach (var train in Program.TrainList)
                 {
                     msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure}";
 
                     if (train.comment != null && train.newDeparture.TotalMinutes != 0)
-                        msg += $" --> New Time: {train.newDeparture} - Info: {train.comment}";
+                        msg += $"\nNew Time: {train.newDeparture} - Info: {train.comment}";
 
                     msg += "\n";
                 }
