@@ -7,11 +7,11 @@ namespace SJbot
         public string type;
         public int num;
         public string track;
-        public TimeSpan departure;
-        public TimeSpan newDeparture;
+        public DateTime departure;
+        public DateTime newDeparture;
         public string comment;
 
-        public SJTrain(string type, int num, string track, TimeSpan d)
+        public SJTrain(string type, int num, string track, DateTime d)
         {
             this.type = type;
             this.num = num;
@@ -19,7 +19,7 @@ namespace SJbot
             departure = d;
         }
 
-        public SJTrain(string type, int num, string track, TimeSpan d, TimeSpan nd, string c)
+        public SJTrain(string type, int num, string track, DateTime d, DateTime nd, string c)
         {
             this.type = type;
             this.num = num;
@@ -32,13 +32,8 @@ namespace SJbot
 
     public class CanceledTrain
     {
-        public DayOfWeek day { get; set; }
-        public TimeSpan time { get; set; }
-        public CanceledTrain(DayOfWeek day, TimeSpan time)
-        {
-            this.day = day;
-            this.time = time;
-        }
+        public string date { get; set; }
+        public CanceledTrain(string date) { this.date = date; }
     }
 
     public class Rootobject
