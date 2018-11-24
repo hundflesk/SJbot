@@ -22,7 +22,7 @@ namespace SJbot
         public static DiscordChannel ChannelSJ { get; private set; }
 
         public static List<SJTrain> TrainList { get; set; }
-        public static TimeSpan BeagleAdd { get; private set; }
+        public static TimeSpan BeagleAdd { get; private set; } //botten körs på beagleboard som går en timme efter
         private static List<KeyValuePair<DayOfWeek, TimeSpan>> SchoolDays { get; set; }
 
         private static List<KeyValuePair<DayOfWeek, TimeSpan>> AddSchoolDays()
@@ -33,7 +33,6 @@ namespace SJbot
                 {DayOfWeek.Tuesday, new TimeSpan(15, 45, 0) },
                 {DayOfWeek.Wednesday, new TimeSpan(15, 20, 0) },
                 {DayOfWeek.Thursday, new TimeSpan(12, 20, 0) },
-                {DayOfWeek.Friday, new TimeSpan(12, 20, 0) }
             }.ToList();
 
             return days;
@@ -42,7 +41,7 @@ namespace SJbot
         private static void Main(string[] args)
         {
             Console.WriteLine("Bot starting...");
-            BeagleAdd = new TimeSpan(1, 0, 0);
+            BeagleAdd = new TimeSpan(1, 0, 0); //lägger till en timme för att beaglens klocka ska gå rätt
             SchoolDays = AddSchoolDays();
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -83,93 +82,98 @@ namespace SJbot
             NetworkCredential credential = new NetworkCredential(client.UserName, client.UserPassword);
 
             bool cheapWay = false; //denna legendariska metod används för att notificateasync inte
-            //ska köras innan listan har hämtats från API:n, threaden ska bara startas en gång
+            //ska startas flera gånger, threaden ska bara startas en gång
 
             List<CanceledTrain> canceledTrainsToday = new List<CanceledTrain>();
             while (true)
             {
-                WebRequest request = WebRequest.Create(client.Url);
-                request.Method = client.HttpMethod.ToString();
-                request.Credentials = credential;
+                DateTime currentDateTime = DateTime.Now.Add(BeagleAdd);
+                string currentDate = currentDateTime.ToShortDateString();
 
-                WebResponse response = await request.GetResponseAsync();
-
-                Stream stream = response.GetResponseStream();
-                if (stream != null)
+                if (currentDateTime.DayOfWeek != DayOfWeek.Friday 
+                    || currentDateTime.DayOfWeek != DayOfWeek.Saturday
+                    || currentDateTime.DayOfWeek != DayOfWeek.Sunday)
                 {
-                    StreamReader reader = new StreamReader(stream); //@"C:\PRR2_filhantering\sj\test.json"
-                    string rawData = await reader.ReadToEndAsync();
-                    Rootobject data = JsonConvert.DeserializeObject<Rootobject>(rawData);
+                    WebRequest request = WebRequest.Create(client.Url);
+                    request.Method = client.HttpMethod.ToString();
+                    request.Credentials = credential;
 
-                    List<SJTrain> tempTrainsList = new List<SJTrain>();
+                    WebResponse response = await request.GetResponseAsync();
 
-                    foreach (Transfer t in data.station.transfers.transfer)
+                    Stream stream = response.GetResponseStream();
+                    if (stream != null)
                     {
-                        DateTime currentDateTime = DateTime.Now.Add(BeagleAdd);
-                        string currentDate = currentDateTime.ToShortDateString();
+                        StreamReader reader = new StreamReader(stream); //@"C:\PRR2_filhantering\sj\test.json" (bara för testning)
+                        string rawData = await reader.ReadToEndAsync();
+                        Rootobject data = JsonConvert.DeserializeObject<Rootobject>(rawData);
 
-                        //när det blir en ny dag ska listan med inställda tåg rensas
-                        if (canceledTrainsToday.Count != 0 && currentDate != canceledTrainsToday.Last().date)
-                            canceledTrainsToday = new List<CanceledTrain>(); //gör en ny lista med tåg som är inställda
+                        List<SJTrain> tempTrainsList = new List<SJTrain>();
 
-                        DateTime trainDateTime = DateTime.Parse(t.departure);
-                        string trainDate = trainDateTime.ToShortDateString();
-
-                        //vill bara visa tågen som går samma dag
-                        if (currentDateTime.DayOfWeek != trainDateTime.DayOfWeek)
-                            break;
-
-                        //alla tågen jag tar går åker till/förbi Västerås
-                        //kollar också om 'destination' har fler än en, därför kollas kommatecknet
-                        if (t.destination.Contains("Västerås") && t.destination.Contains(","))
+                        foreach (Transfer t in data.station.transfers.transfer)
                         {
-                            string type = t.type; //SJ regional hela tiden, men ändå, använder typen
-                            int num = Convert.ToInt32(t.train); //tågnummer, ska alltid gå att konvertera (säker)
+                            //när det blir en ny dag ska listan med inställda tåg rensas
+                            if (canceledTrainsToday.Count != 0 && currentDate != canceledTrainsToday.Last().date)
+                                canceledTrainsToday = new List<CanceledTrain>(); //gör en ny lista med tåg som är inställda
 
-                            if (t.track == "X" || t.track == "x")
-                            { //spår tror jag blir "X" om iställt
+                            DateTime trainDateTime = DateTime.Parse(t.departure);
+                            string trainDate = trainDateTime.ToShortDateString();
 
-                                bool exists = false;
-                                foreach (CanceledTrain ct in canceledTrainsToday)
-                                {
-                                    if (trainDate == ct.date)
-                                        exists = true;
-                                }
-                                if (exists == false)
-                                {
-                                    string msg = $"{Me.Mention}, {t.type}: {t.train} with departure time {t.departure.Split()[1]} has been canceled.";
-                                    msg += $"\nReason: {t.comment} --> Check the new list with command: '?trains'.";
-                                    await Discord.SendMessageAsync(ChannelSJ, msg);
+                            //vill bara visa tågen som går samma dag
+                            if (currentDateTime.DayOfWeek != trainDateTime.DayOfWeek)
+                                break;
 
-                                    canceledTrainsToday.Add(new CanceledTrain(trainDate));
-                                }
-                            }
-                            else
+                            //alla tågen jag tar går åker till/förbi Västerås
+                            //kollar också om 'destination' har fler än en, därför kollas kommatecknet
+                            if (t.destination.Contains("Västerås") && t.destination.Contains(","))
                             {
-                                string track = t.track;
+                                string type = t.type; //SJ regional hela tiden, men ändå, använder typen
+                                int num = Convert.ToInt32(t.train); //tågnummer, ska alltid gå att konvertera (säker)
 
-                                if (t.newDeparture == null)
-                                    tempTrainsList.Add(new SJTrain(type, num, track, trainDateTime));
+                                if (t.track == "X" || t.track == "x")
+                                { //spår tror jag blir "X" om iställt
 
+                                    bool exists = false;
+                                    foreach (CanceledTrain ct in canceledTrainsToday)
+                                    {
+                                        if (trainDate == ct.date)
+                                            exists = true;
+                                    }
+                                    if (exists == false)
+                                    {
+                                        string msg = $"{Me.Mention}, {t.type}: {t.train} with departure time {t.departure.Split()[1]} has been canceled.";
+                                        msg += $"\nReason: {t.comment} --> Check the new list with command: '?trains'.";
+                                        await Discord.SendMessageAsync(ChannelSJ, msg);
+
+                                        canceledTrainsToday.Add(new CanceledTrain(trainDate));
+                                    }
+                                }
                                 else
                                 {
-                                    DateTime newTrainDateTime = DateTime.Parse(t.newDeparture);
-                                    string comment = t.comment;
-                                    tempTrainsList.Add(new SJTrain(type, num, track, trainDateTime, newTrainDateTime, comment));
+                                    string track = t.track;
+
+                                    if (t.newDeparture == null)
+                                        tempTrainsList.Add(new SJTrain(type, num, track, trainDateTime));
+
+                                    else
+                                    {
+                                        DateTime newTrainDateTime = DateTime.Parse(t.newDeparture);
+                                        string comment = t.comment;
+                                        tempTrainsList.Add(new SJTrain(type, num, track, trainDateTime, newTrainDateTime, comment));
+                                    }
                                 }
                             }
                         }
-                    }
-                    TrainList = tempTrainsList;
+                        TrainList = tempTrainsList;
 
-                    if (cheapWay == false)
-                    {
-                        Thread y = new Thread(NotificateAsync);
-                        y.Start();
-                        cheapWay = true;
+                        if (cheapWay == false)
+                        {
+                            Thread y = new Thread(NotificateAsync);
+                            y.Start();
+                            cheapWay = true;
+                        }
                     }
+                    Thread.Sleep(10000);
                 }
-                Thread.Sleep(10000);
             }
         }
 
@@ -189,7 +193,9 @@ namespace SJbot
                 if (SJCommands.onWayHome.Value != currentDate)
                     SJCommands.onWayHome = new KeyValuePair<bool, string>(false, null);
 
-                if (currentDateTime.DayOfWeek == DayOfWeek.Saturday || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
+                if (currentDateTime.DayOfWeek == DayOfWeek.Friday 
+                    || currentDateTime.DayOfWeek == DayOfWeek.Saturday 
+                    || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
                 {
                     if (Bot.Presence.Status != UserStatus.DoNotDisturb) //bot status => röd
                         await Discord.UpdateStatusAsync(null, UserStatus.DoNotDisturb);

@@ -17,13 +17,18 @@ namespace SJbot
         public async Task Done(CommandContext ctx)
         {
             string msg = null;
+
             DateTime currentDateTime = DateTime.Now.Add(Program.BeagleAdd);
             string date = currentDateTime.ToShortDateString();
 
-            if (currentDateTime.DayOfWeek == DayOfWeek.Saturday || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
-                msg = "Error. Trains do not run on weekends.";
+            if (currentDateTime.DayOfWeek == DayOfWeek.Friday 
+                || currentDateTime.DayOfWeek == DayOfWeek.Saturday 
+                || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
+                msg = "Today is not a school day.";
+
             else if (date == onWayHome.Value)
-                msg = "You have already informed us you are on your way home.";
+                msg = "You have already informed us you are on your way home today.";
+
             else
             {
                 msg = "Understood. You will no longer recieve notifications about departures for today.";
@@ -36,16 +41,50 @@ namespace SJbot
         [Description("Explains what this bot does.")]
         public async Task Information(CommandContext ctx)
         {
-            string msg = "This bot notificates you about the departures for the SJ-trains to save your time.";
+            string msg = "This bot notificates you about the departures for the SJ-trains to save your time." +
+                "\nIt will also notificate you if any of the trains get cancelled.";
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
                 Title = "Information about this bot:",
                 Color = DiscordColor.SpringGreen
             };
-
             embed.Description = msg;
             await ctx.RespondAsync(null, false, embed);
+        }
+
+        public static int minutes = 20;
+
+        [RequireOwner]
+        [Command("min")]
+        [Description("Changes the amount of minutes the bot will inform you before the train departure time.")]
+        public async Task Minutes(CommandContext ctx, [Description("")]int argument = 0)
+        {
+            string msg = null;
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+            {
+                Title = "Minutes before notification:",
+                Color = DiscordColor.SpringGreen
+            };
+
+            KeyValuePair<int, int> setting1 = new KeyValuePair<int, int>(1, 20);
+            KeyValuePair<int, int> setting2 = new KeyValuePair<int, int>(2, 25);
+            KeyValuePair<int, int> setting3 = new KeyValuePair<int, int>(3, 30);
+
+            string note = "This is your current setting. Setting has not been changed.";
+
+            if (argument == 0) //skriver ut den nuvarande inställningen
+                msg = $"Current setting: {Minutes} before notification.";
+            else if (argument == setting1.Key)
+            {
+                if (Minutes == setting1.Value)
+                    msg = note;
+                else
+                {
+                    Program.Minutes
+                }
+            }
         }
 
         public static bool notifications = true; //notifikationer är aktiverade by default
@@ -53,7 +92,7 @@ namespace SJbot
         [RequireOwner]
         [Command("notif")]
         [Description("[OWNER ONLY] Enables or disables notifications. Leave argument blank to get current setting.")]
-        public async Task Notifications(CommandContext ctx, [Description("on: enable | off: disable |")]string argument = "state")
+        public async Task Notifications(CommandContext ctx, [Description("on: enable | off: disable |")]string argument = "current")
         {
             string msg = null;
 
@@ -71,7 +110,7 @@ namespace SJbot
             string change = "Notifications have been";
 
             //"state" är default value för argumentet, används för att kolla den nuvarande inställningen
-            if (argument == "state") //ifall användaren vill kolla den nuvarande inställningen
+            if (argument == "current") //ifall användaren vill kolla den nuvarande inställningen
             {
                 msg = "Notifications are currently ";
 
@@ -91,7 +130,7 @@ namespace SJbot
                     notifications = disabled.Value;
                     msg = $"{change} disabled.";
                 }
-            }
+            } //////////
             else if (argument == enabled.Key)
             {
                 if (notifications == enabled.Value)
@@ -121,8 +160,10 @@ namespace SJbot
 
             DateTime currentDateTime = DateTime.Now.Add(Program.BeagleAdd);
 
-            if (currentDateTime.DayOfWeek == DayOfWeek.Saturday || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
-                msg = "The trains do not run on weekends.";
+            if (currentDateTime.DayOfWeek == DayOfWeek.Friday 
+                || currentDateTime.DayOfWeek == DayOfWeek.Saturday 
+                || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
+                msg = "Today is not a school day.";
 
             else if (Program.TrainList.Count == 0)
                 msg = "All the trains have departured for today.";
