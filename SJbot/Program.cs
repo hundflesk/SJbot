@@ -17,9 +17,9 @@ namespace SJbot
         public static DiscordClient Discord { get; private set; }
         private static CommandsNextModule Commands { get; set; }
 
-        public static DiscordUser Bot { get; private set; }
-        public static DiscordUser Me { get; private set; }
-        public static DiscordChannel ChannelSJ { get; private set; }
+        private static DiscordUser Bot { get; set; }
+        private static DiscordUser Me { get; set; }
+        private static DiscordChannel ChannelSJ { get; set; }
 
         public static List<SJTrain> TrainList { get; private set; }
         public static TimeSpan BeagleAdd { get; private set; } //botten körs på beagleboard som går en timme efter
@@ -50,7 +50,7 @@ namespace SJbot
         {
             Discord = new DiscordClient(new DiscordConfiguration
             {
-                Token = "NDkxOTMwOTE4NTAwNDMzOTMw.DoPDsA.-iBZ_CUDa6_O6CiCjPVrIIH0H6k",
+                Token = "",
                 TokenType = TokenType.Bot,
             });
 
@@ -85,7 +85,7 @@ namespace SJbot
             //ska startas flera gånger, threaden ska bara startas en gång
 
             List<CanceledTrain> canceledTrainsToday = new List<CanceledTrain>();
-            while (true)
+            while (true) //körs var 10:e sekund
             {
                 DateTime currentDateTime = DateTime.Now.Add(BeagleAdd);
                 string currentDate = currentDateTime.ToShortDateString();
@@ -111,7 +111,7 @@ namespace SJbot
 
                         foreach (Transfer t in data.station.transfers.transfer)
                         {
-                            //när det blir en ny dag ska listan med inställda tåg rensas
+                            //när det blir en ny dag ska listan med inställda tåg rensas (om listan inte redan är tom)
                             if (canceledTrainsToday.Count != 0 && currentDate != canceledTrainsToday.Last().date)
                                 canceledTrainsToday = new List<CanceledTrain>(); //gör en ny lista med tåg som är inställda
 
@@ -126,11 +126,14 @@ namespace SJbot
                             //kollar också om 'destination' har fler än en, därför kollas kommatecknet
                             if (t.destination.Contains("Västerås") && t.destination.Contains(","))
                             {
-                                string type = t.type; //SJ regional hela tiden, men ändå, använder typen
+                                string type = t.type;
                                 int num = Convert.ToInt32(t.train); //tågnummer, ska alltid gå att konvertera (säker)
 
-                                if (t.track == "X" || t.track == "x")
-                                { //spår tror jag blir "X" om iställt
+                                string track = t.track; //vissa spår kan innehålla en bokstav (ex. 12a o 12b)
+                                //därför används inte datatypen int
+
+                                if (track == "X" || track == "x")
+                                { //spår blir "X" om tåget är inställt
 
                                     bool exists = false;
                                     foreach (CanceledTrain ct in canceledTrainsToday)
@@ -140,8 +143,9 @@ namespace SJbot
                                     }
                                     if (exists == false)
                                     {
-                                        string msg = $"{Me.Mention}, {t.type}: {t.train} with departure time {t.departure.Split()[1]} has been canceled.";
-                                        msg += $"\nReason: {t.comment} --> Check the new list with command: '?trains'.";
+                                        string msg = $"{Me.Mention}, {t.type}: {t.train} with departure time " +
+                                            $"{trainDateTime.ToShortTimeString()} has been canceled." +
+                                            $"\nReason: {t.comment} --> Check the new list with command: '?trains'";
                                         await Discord.SendMessageAsync(ChannelSJ, msg);
 
                                         canceledTrainsToday.Add(new CanceledTrain(trainDate));
@@ -149,8 +153,6 @@ namespace SJbot
                                 }
                                 else
                                 {
-                                    string track = t.track;
-
                                     if (t.newDeparture == null)
                                         tempTrainsList.Add(new SJTrain(type, num, track, trainDateTime));
 
@@ -184,10 +186,13 @@ namespace SJbot
             //skickas 50 sekunder efter i den minut då botten ska egentligen skicka så fort den minuten blev till
             //enkelt sagt: botten ska skicka ett meddelande så fort det blir en ny minut
 
-            while (true)
+            while (true) //körs varje minut
             {
                 DateTime currentDateTime = DateTime.Now.Add(BeagleAdd);
                 string currentDate = currentDateTime.ToShortDateString();
+
+                if (currentDateTime.ToShortTimeString() == "00:43")
+                    await ChannelSJ.DeleteMessagesAsync(await ChannelSJ.GetMessagesAsync());
 
                 //när det blir en ny dag ska "onWayHome" resettas
                 if (SJCommands.onWayHome.Value != currentDate)
@@ -208,7 +213,6 @@ namespace SJbot
                             await Discord.UpdateStatusAsync(null, UserStatus.Online);
 
                         double currentTime = new TimeSpan(currentDateTime.Hour, currentDateTime.Minute, 0).TotalMinutes;
-                        //Console.WriteLine(currentTime + "\n");
 
                         //denna loop kollar om ett tåg går om 20 min, ska avbrytas när den hittar ett tåg
                         foreach (SJTrain train in TrainList)
@@ -218,13 +222,11 @@ namespace SJbot
                             if (train.newDeparture == DateTime.MinValue)
                             {
                                 TimeSpan t = new TimeSpan(train.departure.Hour, train.departure.Minute, 0);
-                                //Console.WriteLine(t.TotalMinutes);
                                 time = t.TotalMinutes;
                             }
                             else
                             {
                                 TimeSpan nt = new TimeSpan(train.newDeparture.Hour, train.newDeparture.Minute, 0);
-                                //Console.WriteLine(nt.TotalMinutes);
                                 time = nt.TotalMinutes;
                             }
 
@@ -239,10 +241,11 @@ namespace SJbot
                                     break;
                                 }
                             }
-                            if (currentTime + 20 == time && currentTime > schoolEnd.TotalMinutes && currentTime < lastNotifTime.TotalMinutes)
+                            if (currentTime + SJCommands.minutes == time && currentTime > schoolEnd.TotalMinutes && currentTime < lastNotifTime.TotalMinutes)
                             {
-                                string msg = $"{Me.Mention}, {train.type}: {train.num} departures in 20 minutes from track {train.track}.";
-                                msg += "\nYou should leave school now to get to the train in time.";
+                                string msg = $"{Me.Mention}, {train.type}: {train.num} departures in " +
+                                    $"{SJCommands.minutes} minutes from track {train.track}." +
+                                    "\nYou should leave school now to get to the train in time.";
 
                                 await Discord.SendMessageAsync(ChannelSJ, msg);
                                 break;

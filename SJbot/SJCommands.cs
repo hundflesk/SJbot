@@ -199,10 +199,10 @@ namespace SJbot
                 embed.Title = "List of trains which will departure today:";
                 foreach (SJTrain train in Program.TrainList)
                 {
-                    msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure.ToLongTimeString()}";
+                    msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure.ToShortTimeString()}";
 
                     if (train.newDeparture != DateTime.MinValue)
-                        msg += $"\nNew Time: {train.newDeparture.ToLongTimeString()} - Info: {train.comment}";
+                        msg += $"\nNew Time: {train.newDeparture.ToShortTimeString()} - Info: {train.comment}";
 
                     msg += "\n";
                 }
