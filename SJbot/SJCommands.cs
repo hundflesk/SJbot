@@ -56,15 +56,15 @@ namespace SJbot
         public static int minutes = 20;
 
         [RequireOwner]
-        [Command("min")]
-        [Description("Changes the amount of minutes the bot will inform you before the train departure time.")]
-        public async Task Minutes(CommandContext ctx, [Description("")]int argument = 0)
+        [Command("mins")]
+        [Description("Changes the amount of minutes a notification will be sent before a train will departure.")]
+        public async Task Minutes(CommandContext ctx, [Description("1 = 20 mins | 2 = 25 mins | 3 = 30 mins")]int argument = 0)
         {
             string msg = null;
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
-                Title = "Minutes before notification:",
+                Title = "Notification settings:",
                 Color = DiscordColor.SpringGreen
             };
 
@@ -75,16 +75,42 @@ namespace SJbot
             string note = "This is your current setting. Setting has not been changed.";
 
             if (argument == 0) //skriver ut den nuvarande inställningen
-                msg = $"Current setting: {Minutes} before notification.";
+                msg = $"Current setting: {minutes} before notification.";
+
             else if (argument == setting1.Key)
             {
-                if (Minutes == setting1.Value)
+                if (minutes == setting1.Value)
                     msg = note;
                 else
                 {
-                    Program.Minutes
+                    minutes = setting1.Value;
+                    msg = $"Changed to setting: {setting1.Key}\nNotifications will be sended {setting1.Value} minutes before departure.";
                 }
             }
+
+            else if (argument == setting2.Key)
+            {
+                if (minutes == setting2.Value)
+                    msg = note;
+                else
+                {
+                    minutes = setting2.Value;
+                    msg = $"Changed to setting: {setting2.Key}\nNotifications will be sended {setting2.Value} minutes before departure.";
+                }
+            }
+
+            else if (argument == setting3.Key)
+            {
+                if (minutes == setting3.Value)
+                    msg = note;
+                else
+                {
+                    minutes = setting3.Value;
+                    msg = $"Changed to setting: {setting3.Key}\nNotifications will be sended {setting3.Value} minutes before departure.";
+                }
+            }
+            embed.Description = msg;
+            await ctx.RespondAsync(null, false, embed);
         }
 
         public static bool notifications = true; //notifikationer är aktiverade by default
@@ -130,7 +156,7 @@ namespace SJbot
                     notifications = disabled.Value;
                     msg = $"{change} disabled.";
                 }
-            } //////////
+            }
             else if (argument == enabled.Key)
             {
                 if (notifications == enabled.Value)
@@ -160,8 +186,8 @@ namespace SJbot
 
             DateTime currentDateTime = DateTime.Now.Add(Program.BeagleAdd);
 
-            if (currentDateTime.DayOfWeek == DayOfWeek.Friday 
-                || currentDateTime.DayOfWeek == DayOfWeek.Saturday 
+            if (currentDateTime.DayOfWeek == DayOfWeek.Friday
+                || currentDateTime.DayOfWeek == DayOfWeek.Saturday
                 || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
                 msg = "Today is not a school day.";
 

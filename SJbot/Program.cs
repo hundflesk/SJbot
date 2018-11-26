@@ -21,7 +21,7 @@ namespace SJbot
         public static DiscordUser Me { get; private set; }
         public static DiscordChannel ChannelSJ { get; private set; }
 
-        public static List<SJTrain> TrainList { get; set; }
+        public static List<SJTrain> TrainList { get; private set; }
         public static TimeSpan BeagleAdd { get; private set; } //botten körs på beagleboard som går en timme efter
         private static List<KeyValuePair<DayOfWeek, TimeSpan>> SchoolDays { get; set; }
 

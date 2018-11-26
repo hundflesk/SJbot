@@ -1861,10 +1861,11 @@
       ]
     },
     "Newtonsoft.Json/11.0.2": {
-      "sha512": "IvJe1pj7JHEsP8B8J8DwlMEx8UInrs/x+9oVY+oCD13jpLu4JbJU2WCIsMRn5C4yW9+DgkaO8uiVE5VHKjpmdQ==",
+      "sha512": "znZGbws7E4BA9jxNZ7FuiIRI3C9hrgatVQSTKhIYZYNOud4M5VfGlTYi6RdYO5sQrebFuF/g9UEV3hOxDMXF6Q==",
       "type": "package",
       "path": "newtonsoft.json/11.0.2",
       "files": [
+        ".signature.p7s",
         "LICENSE.md",
         "lib/net20/Newtonsoft.Json.dll",
         "lib/net20/Newtonsoft.Json.xml",
@@ -4441,24 +4442,30 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Elias Persson\\.nuget\\packages\\": {},
+    "C:\\Users\\elias\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackagesFallback\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
+    "restoreSettings": {
+      "hideWarningsAndErrors": true
+    },
     "restore": {
-      "projectUniqueName": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
+      "projectUniqueName": "C:\\Users\\elias\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
       "projectName": "SJbot",
-      "projectPath": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
-      "packagesPath": "C:\\Users\\Elias Persson\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Elias Persson\\source\\repos\\SJbot\\SJbot\\obj\\",
+      "projectPath": "C:\\Users\\elias\\source\\repos\\SJbot\\SJbot\\SJbot.csproj",
+      "packagesPath": "C:\\Users\\elias\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\elias\\source\\repos\\SJbot\\SJbot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackagesFallback\\",
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\Elias Persson\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\elias\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.Fallback.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp2.0"
