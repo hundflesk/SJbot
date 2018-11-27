@@ -48,7 +48,7 @@ namespace SJbot
 
         private static async Task MainAsync(string[] args)
         {
-            string token = File.ReadAllText(@"C:\Users\Elias Persson\Desktop\dac-proj\SJ Bot\uAintGetinMaToken.txt");
+            string token = File.ReadAllText(@"/home/debian/uAintGetinMaToken.txt");
 
             Discord = new DiscordClient(new DiscordConfiguration
             {
@@ -190,7 +190,7 @@ namespace SJbot
 
             while (true) //körs varje minut
             {
-                DateTime currentDateTime = DateTime.Now;
+                DateTime currentDateTime = DateTime.Now.Add(BeagleAdd);
                 string currentDate = currentDateTime.ToShortDateString();
 
                 if (currentDateTime.ToShortTimeString() == "00:00")
