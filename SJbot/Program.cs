@@ -48,9 +48,11 @@ namespace SJbot
 
         private static async Task MainAsync(string[] args)
         {
+            string token = File.ReadAllText(@"C:\Users\Elias Persson\Desktop\dac-proj\SJ Bot\uAintGetinMaToken.txt");
+
             Discord = new DiscordClient(new DiscordConfiguration
             {
-                Token = "",
+                Token = token,
                 TokenType = TokenType.Bot,
             });
 
@@ -188,10 +190,10 @@ namespace SJbot
 
             while (true) //körs varje minut
             {
-                DateTime currentDateTime = DateTime.Now.Add(BeagleAdd);
+                DateTime currentDateTime = DateTime.Now;
                 string currentDate = currentDateTime.ToShortDateString();
 
-                if (currentDateTime.ToShortTimeString() == "00:43")
+                if (currentDateTime.ToShortTimeString() == "00:00")
                     await ChannelSJ.DeleteMessagesAsync(await ChannelSJ.GetMessagesAsync());
 
                 //när det blir en ny dag ska "onWayHome" resettas
