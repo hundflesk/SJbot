@@ -75,7 +75,7 @@ namespace SJbot
             string note = "This is your current setting. Setting has not been changed.";
 
             if (argument == 0) //skriver ut den nuvarande inställningen
-                msg = $"Current setting: {minutes} before notification.";
+                msg = $"Current setting: {minutes} minutes before notification.";
 
             else if (argument == setting1.Key)
             {
@@ -199,10 +199,10 @@ namespace SJbot
                 embed.Title = "List of trains which will departure today:";
                 foreach (SJTrain train in Program.TrainList)
                 {
-                    msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure.ToShortTimeString()}";
+                    msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure.ToString("HH:mm")}";
 
                     if (train.newDeparture != DateTime.MinValue)
-                        msg += $"\nNew Time: {train.newDeparture.ToShortTimeString()} - Info: {train.comment}";
+                        msg += $"\nNew Time: {train.newDeparture.ToString("HH:mm")} - Info: {train.comment}";
 
                     msg += "\n";
                 }

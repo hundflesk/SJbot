@@ -146,7 +146,7 @@ namespace SJbot
                                     if (exists == false)
                                     {
                                         string msg = $"{Me.Mention}, {t.type}: {t.train} with departure time " +
-                                            $"{trainDateTime.ToShortTimeString()} has been canceled." +
+                                            $"{trainDateTime.ToString("HH:mm")} has been canceled." +
                                             $"\nReason: {t.comment} --> Check the new list with command: '?trains'";
                                         await Discord.SendMessageAsync(ChannelSJ, msg);
 
@@ -193,8 +193,8 @@ namespace SJbot
                 DateTime currentDateTime = DateTime.Now.Add(BeagleAdd);
                 string currentDate = currentDateTime.ToShortDateString();
 
-                if (currentDateTime.ToShortTimeString() == "00:00")
-                    await ChannelSJ.DeleteMessagesAsync(await ChannelSJ.GetMessagesAsync());
+                if (currentDateTime.ToString("HH:mm") == "00:00")
+                    await ChannelSJ.DeleteMessagesAsync(await ChannelSJ.GetMessagesAsync(1000));
 
                 //när det blir en ny dag ska "onWayHome" resettas
                 if (SJCommands.onWayHome.Value != currentDate)
