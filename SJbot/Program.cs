@@ -87,12 +87,19 @@ namespace SJbot
             //ska startas flera gånger, threaden ska bara startas en gång
 
             bool msgSentToday = false;
+            string tempDate = null;
 
             List<CanceledTrain> canceledTrainsToday = new List<CanceledTrain>();
             while (true) //körs var 10:e sekund
             {
                 DateTime currentDateTime = DateTime.Now.Add(BeagleAdd);
                 string currentDate = currentDateTime.ToShortDateString();
+
+                if (currentDate != tempDate)
+                {
+                    msgSentToday = false;
+                    tempDate = null;
+                }
 
                 if (currentDateTime.DayOfWeek != DayOfWeek.Friday 
                     || currentDateTime.DayOfWeek != DayOfWeek.Saturday
@@ -102,10 +109,10 @@ namespace SJbot
                     request.Method = client.HttpMethod.ToString();
                     request.Credentials = credential;
 
-                    WebResponse response = await request.GetResponseAsync();
-
                     try
                     {
+                        WebResponse response = await request.GetResponseAsync();
+
                         Stream stream = response.GetResponseStream();
                         if (stream != null)
                         {
@@ -189,6 +196,8 @@ namespace SJbot
                                 "All functions may not be working correctly.";
 
                             await Discord.SendMessageAsync(ChannelSJ, msg);
+                            msgSentToday = true;
+                            tempDate = currentDate;
                         }
                     }
                     Thread.Sleep(10000);
