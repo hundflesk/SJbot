@@ -16,25 +16,24 @@ namespace SJbot
         [Description("[OWNER ONLY] Tells us you are on your way home from the train station.")]
         public async Task Done(CommandContext ctx)
         {
-            string msg = null;
-
             DateTime currentDateTime = DateTime.Now.Add(Program.BeagleAdd);
-            string date = currentDateTime.ToShortDateString();
-
-            if (currentDateTime.DayOfWeek == DayOfWeek.Friday 
-                || currentDateTime.DayOfWeek == DayOfWeek.Saturday 
-                || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
-                msg = "Today is not a school day.";
-
-            else if (date == onWayHome.Value)
-                msg = "You have already informed us you are on your way home today.";
-
-            else
+            if (currentDateTime.DayOfWeek != DayOfWeek.Friday
+                || currentDateTime.DayOfWeek != DayOfWeek.Saturday
+                || currentDateTime.DayOfWeek != DayOfWeek.Sunday)
             {
-                msg = "Understood. You will no longer recieve notifications about departures for today.";
-                onWayHome = new KeyValuePair<bool, string>(true, date);
+                string msg = null;
+                string date = currentDateTime.ToShortDateString();
+
+                if (date == onWayHome.Value)
+                    msg = "You have already informed us you are on your way home today.";
+
+                else
+                {
+                    msg = "Understood. You will no longer recieve notifications about departures for today.";
+                    onWayHome = new KeyValuePair<bool, string>(true, date);
+                }
+                await ctx.RespondAsync(msg);
             }
-            await ctx.RespondAsync(msg);
         }
 
         [Command("info")]
@@ -42,7 +41,8 @@ namespace SJbot
         public async Task Information(CommandContext ctx)
         {
             string msg = "This bot notificates you about the departures for the SJ-trains to save your time." +
-                "\nIt will also notificate you if any of the trains get cancelled.";
+                "\nIt will also notificate you if any of the trains get cancelled." +
+                "\nNote: The bot does NOT work on friday, saturday and sunday.";
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
@@ -176,39 +176,38 @@ namespace SJbot
         [Description("Prints a detailed list of a couple of trains which will departure this day.")]
         public async Task TrainList(CommandContext ctx)
         {
-            string msg = null;
-
-            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
-            {
-                Title = "No list for today.",
-                Color = DiscordColor.SpringGreen
-            };
-
             DateTime currentDateTime = DateTime.Now.Add(Program.BeagleAdd);
-
             if (currentDateTime.DayOfWeek == DayOfWeek.Friday
                 || currentDateTime.DayOfWeek == DayOfWeek.Saturday
                 || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
-                msg = "Today is not a school day.";
-
-            else if (Program.TrainList.Count == 0)
-                msg = "All the trains have departured for today.";
-
-            else
             {
-                embed.Title = "List of trains which will departure today:";
-                foreach (SJTrain train in Program.TrainList)
+                string msg = null;
+
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
-                    msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure.ToString("HH:mm")}";
+                    Title = "No list for today.",
+                    Color = DiscordColor.SpringGreen
+                };
 
-                    if (train.newDeparture != DateTime.MinValue)
-                        msg += $"\nNew Time: {train.newDeparture.ToString("HH:mm")} - Info: {train.comment}";
+                if (Program.TrainList.Count == 0)
+                    msg = "All the trains have departured for today.";
 
-                    msg += "\n";
+                else
+                {
+                    embed.Title = "List of trains which will departure today:";
+                    foreach (SJTrain train in Program.TrainList)
+                    {
+                        msg += $"\n{train.type}: {train.num} - Track: {train.track} - Time: {train.departure.ToString("HH:mm")}";
+
+                        if (train.newDeparture != DateTime.MinValue)
+                            msg += $"\nNew Time: {train.newDeparture.ToString("HH:mm")} - Info: {train.comment}";
+
+                        msg += "\n";
+                    }
                 }
-            }
-            embed.Description = msg;
-            await ctx.RespondAsync(null, false, embed);
+                embed.Description = msg;
+                await ctx.RespondAsync(null, false, embed);
+            }            
         }
     }
 }

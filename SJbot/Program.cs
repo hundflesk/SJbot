@@ -193,7 +193,7 @@ namespace SJbot
                         if (msgSentToday == false)
                         {
                             string msg = $"{Me.Mention}, error encountered when calling API. " +
-                                "All functions may not be working correctly.";
+                                "Some functions may not be working correctly.";
 
                             await Discord.SendMessageAsync(ChannelSJ, msg);
                             msgSentToday = true;
@@ -218,7 +218,11 @@ namespace SJbot
                 string currentDate = currentDateTime.ToShortDateString();
 
                 if (currentDateTime.ToString("HH:mm") == "00:00")
-                    await ChannelSJ.DeleteMessagesAsync(await ChannelSJ.GetMessagesAsync());
+                {
+                    IReadOnlyList<DiscordMessage> messages = await ChannelSJ.GetMessagesAsync();
+                    if (messages.Count != 0)
+                        await ChannelSJ.DeleteMessagesAsync(messages);
+                }
 
                 //när det blir en ny dag ska "onWayHome" resettas
                 if (SJCommands.onWayHome.Value != currentDate)
