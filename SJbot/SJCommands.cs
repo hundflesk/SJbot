@@ -7,10 +7,20 @@ using DSharpPlus.CommandsNext.Attributes;
 
 namespace SJbot
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class SJCommands
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
+        /// <summary>
+        /// Denna variabel används för att säga till botten att inte få mer notifikationer den dagen för att man är på väg hem.
+        /// </summary>
         public static KeyValuePair<bool, string> onWayHome = new KeyValuePair<bool, string>(false, null);
 
+        /// <summary>
+        /// Denna metod säger till botten att man är på väg hem från skolan (eller jobbet).
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
         [RequireOwner]
         [Command("done")]
         [Description("[OWNER ONLY] Tells us you are on your way home from the train station.")]
@@ -36,6 +46,11 @@ namespace SJbot
             }
         }
 
+        /// <summary>
+        /// Denna metod beskriver vad discord-botten gör när man skriver in det bestämda kommandet.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
         [Command("info")]
         [Description("Explains what this bot does.")]
         public async Task Information(CommandContext ctx)
@@ -53,12 +68,22 @@ namespace SJbot
             await ctx.RespondAsync(null, false, embed);
         }
 
+        /// <summary>
+        /// Denna variabel används för att bestämma hur många minuter innan ett tåg går man ska få en notifikation.
+        /// </summary>
         public static int minutes = 20;
 
+
+        /// <summary>
+        /// Denna metod gör att man kan välja antal minuter innan man får en notifikation om när ett tåg avgår.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="argument"></param>
+        /// <returns></returns>
         [RequireOwner]
         [Command("mins")]
         [Description("Changes the amount of minutes a notification will be sent before a train will departure.")]
-        public async Task Minutes(CommandContext ctx, [Description("1 = 20 mins | 2 = 25 mins | 3 = 30 mins")]int argument = 0)
+        public async Task Minutes(CommandContext ctx, [Description("1 = 20 mins | 2 = 25 mins | 3 = 30 mins |")]int argument = 0)
         {
             string msg = null;
 
@@ -113,8 +138,17 @@ namespace SJbot
             await ctx.RespondAsync(null, false, embed);
         }
 
+        /// <summary>
+        /// Denna variabel bestämmer om man ska få notifikationer eller inte.
+        /// </summary>
         public static bool notifications = true; //notifikationer är aktiverade by default
 
+        /// <summary>
+        /// Denna metod stänger av eller sätter på notifikationer samt säger vilken inställning som är aktiv.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <param name="argument">on: enable | off: disable</param>
+        /// <returns></returns>
         [RequireOwner]
         [Command("notif")]
         [Description("[OWNER ONLY] Enables or disables notifications. Leave argument blank to get current setting.")]
@@ -171,15 +205,20 @@ namespace SJbot
             embed.Description = msg;
             await ctx.RespondAsync(null, false, embed);
         }
-
+        
+        /// <summary>
+        /// Denna metod skriver ut en lista med alla tåg som avgår den dagen.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
         [Command("trains")]
         [Description("Prints a detailed list of a couple of trains which will departure this day.")]
         public async Task TrainList(CommandContext ctx)
         {
             DateTime currentDateTime = DateTime.Now.Add(Program.BeagleAdd);
-            if (currentDateTime.DayOfWeek == DayOfWeek.Friday
-                || currentDateTime.DayOfWeek == DayOfWeek.Saturday
-                || currentDateTime.DayOfWeek == DayOfWeek.Sunday)
+            if (currentDateTime.DayOfWeek != DayOfWeek.Friday
+                || currentDateTime.DayOfWeek != DayOfWeek.Saturday
+                || currentDateTime.DayOfWeek != DayOfWeek.Sunday)
             {
                 string msg = null;
 

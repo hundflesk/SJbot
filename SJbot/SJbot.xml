@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SJbot</name>
+    </assembly>
+    <members>
+        <member name="M:SJbot.Program.AddSchoolDays">
+            <summary>
+            Lägger till alla dagar man går i skolan (eller jobbar) samt vilka tider man slutar.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SJbot.Program.Main(System.String[])">
+            <summary>
+            Denna metod förbereder all information som behövs och startar botten.
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:SJbot.Program.MainAsync(System.String[])">
+            <summary>
+            Denna metod förbereder all information som behövs och startar botten som botten innan,
+            samt startar en thread som kör en speciell metod.
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SJbot.Program.CallAPI">
+            <summary>
+            Denna metod hämtar all information om tågen (typ, id, avgång, etc) och lagrar informationen i en lista.
+            Listan uppdateras var 10:e sekund.
+            </summary>
+        </member>
+        <member name="M:SJbot.Program.NotifyAsync">
+            <summary>
+            Denna metod skickar meddelanden om avgångar beroende på inställningarna i klassen SJCommands.
+            </summary>
+        </member>
+        <member name="F:SJbot.SJCommands.onWayHome">
+            <summary>
+            Denna variabel används för att säga till botten att inte få mer notifikationer den dagen för att man är på väg hem.
+            </summary>
+        </member>
+        <member name="M:SJbot.SJCommands.Done(DSharpPlus.CommandsNext.CommandContext)">
+            <summary>
+            Denna metod säger till botten att man är på väg hem från skolan (eller jobbet).
+            </summary>
+            <param name="ctx"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SJbot.SJCommands.Information(DSharpPlus.CommandsNext.CommandContext)">
+            <summary>
+            Denna metod beskriver vad discord-botten gör när man skriver in det bestämda kommandet.
+            </summary>
+            <param name="ctx"></param>
+            <returns></returns>
+        </member>
+        <member name="F:SJbot.SJCommands.minutes">
+            <summary>
+            Denna variabel används för att bestämma hur många minuter innan ett tåg går man ska få en notifikation.
+            </summary>
+        </member>
+        <member name="M:SJbot.SJCommands.Minutes(DSharpPlus.CommandsNext.CommandContext,System.Int32)">
+            <summary>
+            Denna metod gör att man kan välja antal minuter innan man får en notifikation om när ett tåg avgår.
+            </summary>
+            <param name="ctx"></param>
+            <param name="argument"></param>
+            <returns></returns>
+        </member>
+        <member name="F:SJbot.SJCommands.notifications">
+            <summary>
+            Denna variabel bestämmer om man ska få notifikationer eller inte.
+            </summary>
+        </member>
+        <member name="M:SJbot.SJCommands.Notifications(DSharpPlus.CommandsNext.CommandContext,System.String)">
+            <summary>
+            Denna metod stänger av eller sätter på notifikationer samt säger vilken inställning som är aktiv.
+            </summary>
+            <param name="ctx"></param>
+            <param name="argument">on: enable | off: disable</param>
+            <returns></returns>
+        </member>
+        <member name="M:SJbot.SJCommands.TrainList(DSharpPlus.CommandsNext.CommandContext)">
+            <summary>
+            Denna metod skriver ut en lista med alla tåg som avgår den dagen.
+            </summary>
+            <param name="ctx"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -25,6 +25,10 @@ namespace SJbot
         public static TimeSpan BeagleAdd { get; private set; } //botten körs på beagleboard som går en timme efter
         private static List<KeyValuePair<DayOfWeek, TimeSpan>> SchoolDays { get; set; }
 
+        /// <summary>
+        /// Lägger till alla dagar man går i skolan (eller jobbar) samt vilka tider man slutar.
+        /// </summary>
+        /// <returns></returns>
         private static List<KeyValuePair<DayOfWeek, TimeSpan>> AddSchoolDays()
         {
             List<KeyValuePair<DayOfWeek, TimeSpan>> days = new Dictionary<DayOfWeek, TimeSpan>
@@ -38,17 +42,27 @@ namespace SJbot
             return days;
         }
 
+        /// <summary>
+        /// Denna metod förbereder all information som behövs och startar botten.
+        /// </summary>
+        /// <param name="args"></param>
         private static void Main(string[] args)
         {
             Console.WriteLine("Bot starting...");
-            BeagleAdd = new TimeSpan(1, 0, 0); //lägger till en timme för att beaglens klocka ska gå rätt
+            BeagleAdd = new TimeSpan(1, 0, 0); //lägger till en timme för att beagle-boardens klocka ska gå rätt
             SchoolDays = AddSchoolDays();
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
+        /// <summary>
+        /// Denna metod förbereder all information som behövs och startar botten som botten innan,
+        /// samt startar en thread som kör en speciell metod.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         private static async Task MainAsync(string[] args)
         {
-            string token = File.ReadAllText(@"/home/debian/uAintGetinMaToken.txt");
+            string token = File.ReadAllText(@"/home/debian/token.txt");
 
             Discord = new DiscordClient(new DiscordConfiguration
             {
@@ -76,6 +90,10 @@ namespace SJbot
             await Task.Delay(-1);
         }
 
+        /// <summary>
+        /// Denna metod hämtar all information om tågen (typ, id, avgång, etc) och lagrar informationen i en lista.
+        /// Listan uppdateras var 10:e sekund.
+        /// </summary>
         private static async void CallAPI()
         {
             RestClient client = new RestClient();
@@ -83,7 +101,7 @@ namespace SJbot
             //inloggning för att komma åt json-filen på hemsidan
             NetworkCredential credential = new NetworkCredential(client.UserName, client.UserPassword);
 
-            bool cheapWay = false; //denna legendariska metod används för att notificateasync inte
+            bool firstTime = false; //denna legendariska metod används för att notificateasync inte
             //ska startas flera gånger, threaden ska bara startas en gång
 
             bool msgSentToday = false;
@@ -180,11 +198,11 @@ namespace SJbot
                             }
                             TrainList = tempTrainsList;
 
-                            if (cheapWay == false)
+                            if (firstTime == false)
                             {
-                                Thread y = new Thread(NotificateAsync);
+                                Thread y = new Thread(NotifyAsync);
                                 y.Start();
-                                cheapWay = true;
+                                firstTime = true;
                             }
                         }
                     }
@@ -205,7 +223,10 @@ namespace SJbot
             }
         }
 
-        private static async void NotificateAsync()
+        /// <summary>
+        /// Denna metod skickar meddelanden om avgångar beroende på inställningarna i klassen SJCommands.
+        /// </summary>
+        private static async void NotifyAsync()
         {
             bool firstTime = true; //används för att notifikationerna ska köras så fort det blir en ny minut
             //annars om man startar programmet ex. 10 sekunder innan det blir en ny minut, kommer en notifikation
@@ -219,9 +240,14 @@ namespace SJbot
 
                 if (currentDateTime.ToString("HH:mm") == "00:00")
                 {
-                    IReadOnlyList<DiscordMessage> messages = await ChannelSJ.GetMessagesAsync();
-                    if (messages.Count != 0)
-                        await ChannelSJ.DeleteMessagesAsync(messages);
+                    while (true)
+                    {
+                        IReadOnlyList<DiscordMessage> messages = await ChannelSJ.GetMessagesAsync();
+                        if (messages.Count == 0)
+                            break;
+                        else
+                            await ChannelSJ.DeleteMessagesAsync(messages);
+                    }
                 }
 
                 //när det blir en ny dag ska "onWayHome" resettas
